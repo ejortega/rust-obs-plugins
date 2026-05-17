@@ -42,6 +42,16 @@ fn main() {
     .expect("Couldn't write obsconfig.h stub");
     let out_dir_include = format!("-I{}", out_dir.display());
 
+    // OBS's util/sse-intrin.h pulls in <simde/x86/sse2.h>. On Linux the
+    // libsimde-dev package puts it under /usr/include, which clang searches
+    // by default. On macOS the headers come from Homebrew (brew install simde),
+    // and the Homebrew prefix isn't on clang's default search path — add both
+    // possible prefixes; clang silently ignores ones that don't exist.
+    #[cfg(target_os = "macos")]
+    let extra_includes: &[&str] = &["-I/opt/homebrew/include", "-I/usr/local/include"];
+    #[cfg(not(target_os = "macos"))]
+    let extra_includes: &[&str] = &[];
+
     let builder = bindgen::Builder::default()
         .header("wrapper.h")
         .clang_args([
@@ -53,6 +63,7 @@ fn main() {
             "-I./obs/frontend/api/",
             &out_dir_include,
         ])
+        .clang_args(extra_includes)
         .blocklist_type("_bindgen_ty_2")
         .blocklist_type("_bindgen_ty_3")
         .blocklist_type("_bindgen_ty_4")

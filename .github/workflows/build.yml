@@ -56,7 +56,7 @@ jobs:
           sudo add-apt-repository ppa:obsproject/obs-studio
           sudo apt-get remove libclang1-15
           sudo apt-get update
-          sudo apt-get install obs-studio libxcb-randr0-dev libxcb-ewmh-dev
+          sudo apt-get install obs-studio libxcb-randr0-dev libxcb-ewmh-dev libsimde-dev
 
       - run: cargo build --verbose --workspace
 
@@ -96,6 +96,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - run: brew install --cask obs
+
+      - run: brew install simde
 
       - run: cargo build --verbose --workspace --exclude scroll-focus-filter
 
