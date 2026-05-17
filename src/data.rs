@@ -339,7 +339,7 @@ impl DataArray<'_> {
         self.len() == 0
     }
 
-    pub fn get(&self, index: usize) -> Option<DataObj> {
+    pub fn get(&self, index: usize) -> Option<DataObj<'_>> {
         // https://github.com/obsproject/obs-studio/blob/01610d8c06edb08d0cc3155cb91b3e52e9a6473e/libobs/obs-data.c#L1395
         // os_atomic_inc_long(&data->ref);
         let ptr = unsafe { obs_data_array_item(self.raw, index as size_t) };

@@ -28,6 +28,7 @@ impl AudioDataContext {
         }
     }
 
+    #[allow(clippy::mut_from_ref)]
     pub fn get_channel_as_mut_slice(&self, channel: usize) -> Option<&'_ mut [f32]> {
         unsafe {
             let data = self.pointer.as_ref()?.data;

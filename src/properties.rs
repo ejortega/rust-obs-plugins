@@ -102,7 +102,7 @@ impl Properties {
         name: ObsString,
         description: ObsString,
         editable: bool,
-    ) -> ListProp<T> {
+    ) -> ListProp<'_, T> {
         unsafe {
             let raw = obs_properties_add_list(
                 self.pointer,
