@@ -177,7 +177,10 @@ impl<'a, S> DrawCallbackId<'a, S> {
         unsafe {
             obs_display_add_draw_callback(
                 self.display,
-                Some(std::mem::transmute(self.callback)),
+                Some(std::mem::transmute::<
+                    *const std::ffi::c_void,
+                    unsafe extern "C" fn(*mut std::ffi::c_void, u32, u32),
+                >(self.callback)),
                 ptr as *mut std::ffi::c_void,
             )
         }
@@ -199,7 +202,10 @@ impl<'a, S> Drop for DrawCallbackId<'a, S> {
             // we don't check validity of the display here
             obs_display_remove_draw_callback(
                 self.display,
-                Some(std::mem::transmute(self.callback)),
+                Some(std::mem::transmute::<
+                    *const std::ffi::c_void,
+                    unsafe extern "C" fn(*mut std::ffi::c_void, u32, u32),
+                >(self.callback)),
                 self.data as *mut std::ffi::c_void,
             );
             drop(Box::from_raw(self.data));

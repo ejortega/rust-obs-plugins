@@ -224,7 +224,7 @@ impl GetPropertiesSource for ScrollFocusFilter {
 }
 
 fn smooth_step(x: f32) -> f32 {
-    let t = ((x / 1.).max(0.)).min(1.);
+    let t = (x / 1.).clamp(0., 1.);
     t * t * (3. - 2. * t)
 }
 

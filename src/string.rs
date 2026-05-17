@@ -93,7 +93,7 @@ pub trait DisplayExt: Sized {
 }
 impl DisplayExt for ObsString {}
 impl DisplayExt for Option<ObsString> {}
-impl<'a> DisplayExt for Option<&'a ObsString> {}
+impl DisplayExt for Option<&ObsString> {}
 impl<E> DisplayExt for Result<ObsString, E> {}
 impl std::fmt::Display for DisplayStr<'_, ObsString> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

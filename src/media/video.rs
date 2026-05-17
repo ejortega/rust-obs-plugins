@@ -145,8 +145,8 @@ impl VideoInfo {
         use VideoFormat::*;
         let width = self.width as usize;
         let height = self.height as usize;
-        let half_width = (width + 1) / 2;
-        let half_height = (height + 1) / 2;
+        let half_width = width.div_ceil(2);
+        let half_height = height.div_ceil(2);
         let full_size = width * height;
         let half_size = half_width * height;
         let quarter_size = half_width * half_height;

@@ -9,7 +9,9 @@ pub struct WindowSnapshot {
     pub width: f32,
     pub height: f32,
 
+    #[allow(dead_code)]
     pub root_width: f32,
+    #[allow(dead_code)]
     pub root_height: f32,
 }
 

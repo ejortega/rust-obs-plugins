@@ -117,8 +117,8 @@
 //!
 //! 1. Run `cargo build --release`
 //! 2. Copy `/target/release/<module-name>.so` to your OBS plugins folder
-//! (`/usr/lib/obs-plugins/`) 3. The plugin should be available for use from
-//! inside OBS
+//!    (`/usr/lib/obs-plugins/`)
+//! 3. The plugin should be available for use from inside OBS
 
 /// Raw bindings of OBS C API
 pub use obs_sys;

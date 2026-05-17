@@ -549,7 +549,7 @@ impl GraphicsTexture {
     }
 
     #[inline]
-    pub fn map(&mut self) -> Result<MappedTexture> {
+    pub fn map(&mut self) -> Result<MappedTexture<'_>> {
         MappedTexture::new(self)
     }
 
