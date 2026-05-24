@@ -67,6 +67,11 @@ fn main() {
         .blocklist_type("_bindgen_ty_2")
         .blocklist_type("_bindgen_ty_3")
         .blocklist_type("_bindgen_ty_4")
+        // Apple ARM NEON D-register bundle types (e.g. int8x8x2_t) have an
+        // alignment attribute bindgen can't reflect into Rust, so their
+        // generated layout tests panic. They're not part of the OBS public
+        // API — only transitively included via simde — so just drop them.
+        .blocklist_type(r"^(int|uint|float|bfloat|poly)(8x8|16x4|32x2)x[234]_t$")
         .derive_default(true)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
 
