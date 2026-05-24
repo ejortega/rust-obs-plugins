@@ -1,4 +1,4 @@
-use paste::item;
+use pastey::item;
 
 use std::marker::PhantomData;
 

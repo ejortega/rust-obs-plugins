@@ -6,8 +6,14 @@ edition = "2018"
 
 [dependencies]
 obs-wrapper = { path = "../..", version = "*" }
-nnnoiseless = { version = "0.2.1" }
-dasp = { version = "0.11.0", features = [ "interpolate", "signal", "ring_buffer", "interpolate-linear" ] }
+
+dasp = { version = "0.11.0", features = [
+    "interpolate",
+    "signal",
+    "ring_buffer",
+    "interpolate-linear",
+] }
+nnnoiseless = "0.5.2"
 
 [lib]
 name = "rnnoisedenoiser"
