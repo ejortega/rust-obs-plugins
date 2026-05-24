@@ -591,9 +591,9 @@ dependencies = [
 
 [[package]]
 name = "quick-xml"
-version = "0.22.0"
+version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8533f14c8382aaad0d592c812ac3b826162128b65662331e1127b45c3d18536b"
+checksum = "eff6510e86862b57b210fd8cbe8ed3f0d7d600b9c2863cd4549a2e033c66e956"
 dependencies = [
  "memchr",
 ]
@@ -707,7 +707,6 @@ dependencies = [
  "crossbeam-channel",
  "obs-wrapper",
  "xcb",
- "xcb-util",
 ]
 
 [[package]]
@@ -898,21 +897,11 @@ dependencies = [
 
 [[package]]
 name = "xcb"
-version = "0.10.1"
+version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "771e2b996df720cd1c6dd9ff90f62d91698fd3610cc078388d0564bdd6622a9c"
+checksum = "ee4c580d8205abb0a5cf4eb7e927bd664e425b6c3263f9c5310583da96970cf6"
 dependencies = [
+ "bitflags 1.3.2",
  "libc",
- "log",
  "quick-xml",
-]
-
-[[package]]
-name = "xcb-util"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7c12d11589c9af0a90ca45e6177571be37d61c981c49c40e1bbd6c5867181e0"
-dependencies = [
- "libc",
- "xcb",
 ]
