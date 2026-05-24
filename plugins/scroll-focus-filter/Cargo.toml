@@ -8,7 +8,7 @@ edition = "2018"
 obs-wrapper = { path = "../..", version = "*" }
 
 crossbeam-channel = "0.5.15"
-xcb = { version = "0.10.0", features = ["randr"] }
+xcb = { version = "1.6.0", features = ["randr"] }
 xcb-util = { version = "0.4.0", features = ["ewmh"] }
 
 [lib]
