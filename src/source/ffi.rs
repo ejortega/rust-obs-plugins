@@ -7,7 +7,7 @@ use crate::{
     hotkey::{Hotkey, HotkeyCallbacks},
     wrapper::PtrWrapper,
 };
-use paste::item;
+use pastey::item;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::ffi::c_void;

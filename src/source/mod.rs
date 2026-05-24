@@ -1,4 +1,4 @@
-use paste::item;
+use pastey::item;
 
 pub mod context;
 mod ffi;

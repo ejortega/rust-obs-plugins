@@ -5,7 +5,7 @@ use obs_sys::{
     audio_data, encoder_packet, obs_hotkey_id, obs_hotkey_register_output, obs_hotkey_t,
     obs_properties, size_t, video_data,
 };
-use paste::item;
+use pastey::item;
 use std::collections::HashMap;
 use std::ffi::c_void;
 use std::mem::forget;

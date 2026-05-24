@@ -36,7 +36,7 @@ use obs_sys::{
     obs_allow_direct_render_OBS_NO_DIRECT_RENDERING, obs_enter_graphics, obs_leave_graphics,
     obs_source_draw, vec2, vec3, vec4, GS_DYNAMIC,
 };
-use paste::item;
+use pastey::item;
 use std::{
     ffi::{CStr, CString},
     ptr,

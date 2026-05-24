@@ -21,7 +21,7 @@ struct Output {
 struct RnnoiseDenoiserFilter {
     output: Output,
     input: VecDeque<f32>,
-    state: Box<DenoiseState>,
+    state: Box<DenoiseState<'static>>,
     temp: [f32; FRAME_SIZE],
     temp_out: [f32; FRAME_SIZE],
     sample_rate: f64,
