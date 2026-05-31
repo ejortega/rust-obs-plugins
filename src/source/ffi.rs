@@ -1,6 +1,6 @@
 use super::context::{CreatableSourceContext, GlobalContext, VideoRenderContext};
-use super::{traits::*, SourceRef};
 use super::{EnumActiveContext, EnumAllContext};
+use super::{SourceRef, traits::*};
 use crate::media::{audio::AudioDataContext, video::VideoDataSourceContext};
 use crate::{
     data::DataObj,
@@ -35,13 +35,15 @@ impl<D> DataWrapper<D> {
         data: *mut c_void,
     ) {
         for (name, description, func) in callbacks.into_iter() {
-            let id = obs_hotkey_register_source(
-                source,
-                name.as_ptr(),
-                description.as_ptr(),
-                Some(hotkey_callback::<D>),
-                data,
-            );
+            let id = unsafe {
+                obs_hotkey_register_source(
+                    source,
+                    name.as_ptr(),
+                    description.as_ptr(),
+                    Some(hotkey_callback::<D>),
+                    data,
+                )
+            };
 
             self.hotkey_callbacks.insert(id, func);
         }
@@ -63,7 +65,7 @@ macro_rules! impl_simple_fn {
             pub unsafe extern "C" fn $name<D: $trait>(
                 data: *mut std::os::raw::c_void,
             ) $(-> $ret)? {
-                let wrapper = &mut *(data as *mut DataWrapper<D>);
+                let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
                 D::$name(&mut wrapper.data)
             }
         }
@@ -88,8 +90,8 @@ pub unsafe extern "C" fn create<D: Sourceable>(
 ) -> *mut c_void {
     let mut global = GlobalContext;
     // this is later forgotten
-    let settings = DataObj::from_raw_unchecked(settings).unwrap();
-    let mut context = CreatableSourceContext::from_raw(settings, &mut global);
+    let settings = unsafe { DataObj::from_raw_unchecked(settings) }.unwrap();
+    let mut context = unsafe { CreatableSourceContext::from_raw(settings, &mut global) };
     let source_context = SourceRef::from_raw(source).expect("create");
 
     let data = D::create(&mut context, source_context);
@@ -100,23 +102,25 @@ pub unsafe extern "C" fn create<D: Sourceable>(
 
     let pointer = Box::into_raw(Box::new(wrapper));
 
-    pointer
-        .as_mut()
-        .unwrap()
-        .register_callbacks(callbacks, source, pointer as *mut c_void);
+    unsafe {
+        pointer
+            .as_mut()
+            .unwrap()
+            .register_callbacks(callbacks, source, pointer as *mut c_void);
+    }
 
     pointer as *mut c_void
 }
 
 pub unsafe extern "C" fn destroy<D>(data: *mut c_void) {
-    let wrapper: Box<DataWrapper<D>> = Box::from_raw(data as *mut DataWrapper<D>);
+    let wrapper: Box<DataWrapper<D>> = unsafe { Box::from_raw(data as *mut DataWrapper<D>) };
     drop(wrapper);
 }
 
 pub unsafe extern "C" fn update<D: UpdateSource>(data: *mut c_void, settings: *mut obs_data_t) {
     let mut global = GlobalContext;
-    let data: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
-    let mut settings = DataObj::from_raw_unchecked(settings).unwrap();
+    let data: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let mut settings = unsafe { DataObj::from_raw_unchecked(settings) }.unwrap();
     D::update(&mut data.data, &mut settings, &mut global);
     forget(settings);
 }
@@ -125,7 +129,7 @@ pub unsafe extern "C" fn video_render<D: VideoRenderSource>(
     data: *mut std::os::raw::c_void,
     _effect: *mut gs_effect_t,
 ) {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     let mut global = GlobalContext;
     let mut render = VideoRenderContext;
     D::video_render(&mut wrapper.data, &mut global, &mut render);
@@ -139,7 +143,7 @@ pub unsafe extern "C" fn audio_render<D: AudioRenderSource>(
     _channels: size_t,
     _sample_rate: size_t,
 ) -> bool {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     let mut global = GlobalContext;
     D::audio_render(&mut wrapper.data, &mut global);
     // TODO: understand what this bool is
@@ -149,7 +153,7 @@ pub unsafe extern "C" fn audio_render<D: AudioRenderSource>(
 pub unsafe extern "C" fn get_properties<D: GetPropertiesSource>(
     data: *mut std::os::raw::c_void,
 ) -> *mut obs_properties {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     let properties = D::get_properties(&mut wrapper.data);
     properties.into_raw()
 }
@@ -159,7 +163,7 @@ pub unsafe extern "C" fn enum_active_sources<D: EnumActiveSource>(
     _enum_callback: obs_source_enum_proc_t,
     _param: *mut std::os::raw::c_void,
 ) {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     let context = EnumActiveContext {};
     D::enum_active_sources(&mut wrapper.data, &context);
 }
@@ -169,7 +173,7 @@ pub unsafe extern "C" fn enum_all_sources<D: EnumAllSource>(
     _enum_callback: obs_source_enum_proc_t,
     _param: *mut std::os::raw::c_void,
 ) {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     let context = EnumAllContext {};
     D::enum_all_sources(&mut wrapper.data, &context);
 }
@@ -183,7 +187,7 @@ pub unsafe extern "C" fn video_tick<D: VideoTickSource>(
     data: *mut std::os::raw::c_void,
     seconds: f32,
 ) {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     D::video_tick(&mut wrapper.data, seconds);
 }
 
@@ -192,7 +196,7 @@ pub unsafe extern "C" fn filter_audio<D: FilterAudioSource>(
     audio: *mut obs_audio_data,
 ) -> *mut obs_audio_data {
     let mut context = AudioDataContext::from_raw(audio);
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     D::filter_audio(&mut wrapper.data, &mut context);
     audio
 }
@@ -202,7 +206,7 @@ pub unsafe extern "C" fn filter_video<D: FilterVideoSource>(
     video: *mut obs_source_frame,
 ) -> *mut obs_source_frame {
     let mut context = VideoDataSourceContext::from_raw(video);
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     D::filter_video(&mut wrapper.data, &mut context);
     video
 }
@@ -211,14 +215,14 @@ pub unsafe extern "C" fn media_play_pause<D: MediaPlayPauseSource>(
     data: *mut std::os::raw::c_void,
     pause: bool,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
     D::play_pause(&mut wrapper.data, pause);
 }
 
 pub unsafe extern "C" fn media_get_state<D: MediaGetStateSource>(
     data: *mut std::os::raw::c_void,
 ) -> obs_media_state {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
     D::get_state(&mut wrapper.data).as_raw()
 }
 
@@ -226,7 +230,7 @@ pub unsafe extern "C" fn media_set_time<D: MediaSetTimeSource>(
     data: *mut std::os::raw::c_void,
     milliseconds: i64,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
     D::set_time(&mut wrapper.data, milliseconds);
 }
 
@@ -236,7 +240,7 @@ macro_rules! impl_media {
             pub unsafe extern "C" fn [<media_$name>]<D: $trait>(
                 data: *mut std::os::raw::c_void,
             ) $(-> $ret)? {
-                let wrapper = &mut *(data as *mut DataWrapper<D>);
+                let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
                 D::$name(&mut wrapper.data)
             }
         }
@@ -254,7 +258,7 @@ impl_media!(
 
 pub unsafe extern "C" fn get_defaults<D: GetDefaultsSource>(settings: *mut obs_data_t) {
     // this is later forgotten
-    let mut settings = DataObj::from_raw_unchecked(settings).unwrap();
+    let mut settings = unsafe { DataObj::from_raw_unchecked(settings) }.unwrap();
     D::get_defaults(&mut settings);
     forget(settings);
 }
@@ -265,11 +269,11 @@ pub unsafe extern "C" fn hotkey_callback<D>(
     hotkey: *mut obs_hotkey_t,
     pressed: bool,
 ) {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
 
     let data = &mut wrapper.data;
     let hotkey_callbacks = &mut wrapper.hotkey_callbacks;
-    let mut key = Hotkey::from_raw(hotkey, pressed);
+    let mut key = unsafe { Hotkey::from_raw(hotkey, pressed) };
 
     if let Some(callback) = hotkey_callbacks.get_mut(&id) {
         callback(&mut key, data);
@@ -283,10 +287,11 @@ pub unsafe extern "C" fn mouse_click<D: MouseClickSource>(
     mouse_up: bool,
     click_count: u32,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let event = unsafe { *event };
     D::mouse_click(
         &mut wrapper.data,
-        *event,
+        event,
         super::MouseButton::try_from(type_ as obs_button_type).unwrap(),
         !mouse_up,
         click_count as u8,
@@ -298,8 +303,9 @@ pub unsafe extern "C" fn mouse_move<D: MouseMoveSource>(
     event: *const obs_mouse_event,
     mouse_leave: bool,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
-    D::mouse_move(&mut wrapper.data, *event, mouse_leave);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let event = unsafe { *event };
+    D::mouse_move(&mut wrapper.data, event, mouse_leave);
 }
 
 pub unsafe extern "C" fn mouse_wheel<D: MouseWheelSource>(
@@ -308,8 +314,9 @@ pub unsafe extern "C" fn mouse_wheel<D: MouseWheelSource>(
     xdelta: i32,
     ydelta: i32,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
-    D::mouse_wheel(&mut wrapper.data, *event, xdelta, ydelta);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let event = unsafe { *event };
+    D::mouse_wheel(&mut wrapper.data, event, xdelta, ydelta);
 }
 
 pub unsafe extern "C" fn key_click<D: KeyClickSource>(
@@ -317,11 +324,12 @@ pub unsafe extern "C" fn key_click<D: KeyClickSource>(
     event: *const obs_key_event,
     key_up: bool,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
-    D::key_click(&mut wrapper.data, *event, !key_up);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let event = unsafe { *event };
+    D::key_click(&mut wrapper.data, event, !key_up);
 }
 
 pub unsafe extern "C" fn focus<D: FocusSource>(data: *mut std::os::raw::c_void, focus: bool) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
     D::focus(&mut wrapper.data, focus);
 }

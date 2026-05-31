@@ -1,5 +1,5 @@
-use crate::output::{traits::Outputable, OutputInfo, OutputInfoBuilder};
-use crate::source::{traits::Sourceable, SourceInfo, SourceInfoBuilder};
+use crate::output::{OutputInfo, OutputInfoBuilder, traits::Outputable};
+use crate::source::{SourceInfo, SourceInfoBuilder, traits::Sourceable};
 use crate::string::{DisplayExt as _, ObsString, TryIntoObsString as _};
 use crate::{Error, Result};
 use obs_sys::{
@@ -86,13 +86,13 @@ macro_rules! obs_register_module {
         static mut LOAD_CONTEXT: Option<$crate::module::LoadContext> = None;
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_set_pointer(raw: *mut $crate::obs_sys::obs_module_t) {
             OBS_MODULE = ModuleRef::from_raw(raw).ok().map(<$t>::new);
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_current_module() -> *mut $crate::obs_sys::obs_module_t {
             if let Some(module) = &OBS_MODULE {
                 module.get_ctx().get_raw()
@@ -102,13 +102,13 @@ macro_rules! obs_register_module {
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_ver() -> u32 {
             $crate::obs_sys::LIBOBS_API_MAJOR_VER
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_load() -> bool {
             let mut module = OBS_MODULE.as_mut().expect("Could not get current module!");
             let mut context = unsafe { $crate::module::LoadContext::new() };
@@ -119,33 +119,33 @@ macro_rules! obs_register_module {
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_unload() {
             let mut module = OBS_MODULE.as_mut().expect("Could not get current module!");
             module.unload();
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_post_load() {
             let mut module = OBS_MODULE.as_mut().expect("Could not get current module!");
             module.post_load();
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_name() -> *const std::os::raw::c_char {
             <$t>::name().as_ptr()
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_description() -> *const std::os::raw::c_char {
             <$t>::description().as_ptr()
         }
 
         #[allow(missing_safety_doc)]
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         pub unsafe extern "C" fn obs_module_author() -> *const std::os::raw::c_char {
             <$t>::author().as_ptr()
         }

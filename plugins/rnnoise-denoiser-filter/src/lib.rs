@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 
 use dasp::{
     interpolate::linear::Linear,
-    signal::{self, interpolate::Converter, Signal},
+    signal::{self, Signal, interpolate::Converter},
 };
 
 const RNNOISE_SAMPLE_RATE: f64 = 48000.;
@@ -193,7 +193,9 @@ impl Module for TheModule {
     }
 
     fn description() -> ObsString {
-        obs_string!("A filter that removes background noise from your microphone using the rnnoise neural network noise suppression model.")
+        obs_string!(
+            "A filter that removes background noise from your microphone using the rnnoise neural network noise suppression model."
+        )
     }
     fn name() -> ObsString {
         obs_string!("Rnnoise Noise Suppression Filter")

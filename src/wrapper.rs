@@ -63,7 +63,7 @@ pub trait PtrWrapper: Sized {
     /// This function would return a pointer not managed, should only called
     /// when interacting with extern C api.
     unsafe fn as_ptr_mut(&self) -> *mut Self::Pointer {
-        self.as_ptr() as *mut _
+        unsafe { self.as_ptr() as *mut _ }
     }
 }
 
@@ -122,7 +122,7 @@ macro_rules! impl_ptr_wrapper {
                 if raw.is_null() {
                     None
                 } else {
-                    Some(Self::new_internal(raw))
+                    Some(unsafe { Self::new_internal(raw) })
                 }
             }
 
@@ -134,7 +134,7 @@ macro_rules! impl_ptr_wrapper {
 
             unsafe fn as_ptr(&self) -> *const Self::Pointer {
                 use $crate::wrapper::PtrWrapperInternal;
-                self.get_internal()
+                unsafe { self.get_internal() }
             }
         }
     };

@@ -3,7 +3,7 @@ use pastey::item;
 use std::marker::PhantomData;
 
 use obs_sys::{
-    obs_output_info, OBS_OUTPUT_AUDIO, OBS_OUTPUT_ENCODED, OBS_OUTPUT_MULTI_TRACK, OBS_OUTPUT_VIDEO,
+    OBS_OUTPUT_AUDIO, OBS_OUTPUT_ENCODED, OBS_OUTPUT_MULTI_TRACK, OBS_OUTPUT_VIDEO, obs_output_info,
 };
 
 pub mod context;
