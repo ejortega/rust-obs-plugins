@@ -2,7 +2,7 @@
 name = "obs-wrapper"
 version = "0.4.1"
 authors = ["Bennett Hardwick <me@bennetthardwick.com>"]
-edition = "2018"
+edition = "2024"
 license = "GPL-2.0"
 description = "Safe wrapper of obs-sys"
 repository = "https://github.com/bennetthardwick/rust-obs-plugins"

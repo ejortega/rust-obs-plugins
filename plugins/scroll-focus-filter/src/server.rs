@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use xcb::{x, XidNew};
+use xcb::{XidNew, x};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 

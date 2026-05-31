@@ -1,7 +1,7 @@
 use std::os::raw::c_char;
 
 use log::{Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
-use obs_sys::{_bindgen_ty_1, blog, LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_WARNING};
+use obs_sys::{_bindgen_ty_1, LOG_DEBUG, LOG_ERROR, LOG_INFO, LOG_WARNING, blog};
 
 /// A logger that plugs into OBS's logging system.
 ///
@@ -91,7 +91,7 @@ impl Log for Logger {
         unsafe {
             blog(
                 native_level as i32,
-                "%s\0".as_ptr() as *const c_char,
+                c"%s".as_ptr(),
                 line.as_ptr() as *const c_char,
             );
         }

@@ -6,15 +6,16 @@ pub mod scene;
 pub mod traits;
 
 use crate::{
+    Result,
     media::state::MediaState,
     string::{DisplayExt as _, TryIntoObsString},
-    Result,
 };
 
 pub use context::*;
 pub use traits::*;
 
 use obs_sys::{
+    OBS_SOURCE_AUDIO, OBS_SOURCE_CONTROLLABLE_MEDIA, OBS_SOURCE_INTERACTION, OBS_SOURCE_VIDEO,
     obs_filter_get_target, obs_icon_type, obs_icon_type_OBS_ICON_TYPE_AUDIO_INPUT,
     obs_icon_type_OBS_ICON_TYPE_AUDIO_OUTPUT, obs_icon_type_OBS_ICON_TYPE_BROWSER,
     obs_icon_type_OBS_ICON_TYPE_CAMERA, obs_icon_type_OBS_ICON_TYPE_COLOR,
@@ -36,8 +37,7 @@ use obs_sys::{
     obs_source_set_name, obs_source_showing, obs_source_skip_video_filter, obs_source_t,
     obs_source_type, obs_source_type_OBS_SOURCE_TYPE_FILTER, obs_source_type_OBS_SOURCE_TYPE_INPUT,
     obs_source_type_OBS_SOURCE_TYPE_SCENE, obs_source_type_OBS_SOURCE_TYPE_TRANSITION,
-    obs_source_update, OBS_SOURCE_AUDIO, OBS_SOURCE_CONTROLLABLE_MEDIA, OBS_SOURCE_INTERACTION,
-    OBS_SOURCE_VIDEO,
+    obs_source_update,
 };
 
 use super::{
@@ -269,12 +269,12 @@ impl SourceRef {
         func: F,
     ) {
         unsafe {
-            if let Ok(SourceType::Filter) = SourceType::from_raw(obs_source_get_type(self.inner)) {
-                if obs_source_process_filter_begin(self.inner, format.as_raw(), direct.as_raw()) {
-                    let mut context = GraphicsEffectContext::new();
-                    func(&mut context, effect);
-                    obs_source_process_filter_end(self.inner, effect.as_ptr(), cx, cy);
-                }
+            if let Ok(SourceType::Filter) = SourceType::from_raw(obs_source_get_type(self.inner))
+                && obs_source_process_filter_begin(self.inner, format.as_raw(), direct.as_raw())
+            {
+                let mut context = GraphicsEffectContext::new();
+                func(&mut context, effect);
+                obs_source_process_filter_end(self.inner, effect.as_ptr(), cx, cy);
             }
         }
     }
@@ -291,18 +291,18 @@ impl SourceRef {
         func: F,
     ) {
         unsafe {
-            if let Ok(SourceType::Filter) = SourceType::from_raw(obs_source_get_type(self.inner)) {
-                if obs_source_process_filter_begin(self.inner, format.as_raw(), direct.as_raw()) {
-                    let mut context = GraphicsEffectContext::new();
-                    func(&mut context, effect);
-                    obs_source_process_filter_tech_end(
-                        self.inner,
-                        effect.as_ptr(),
-                        cx,
-                        cy,
-                        technique.as_ptr(),
-                    );
-                }
+            if let Ok(SourceType::Filter) = SourceType::from_raw(obs_source_get_type(self.inner))
+                && obs_source_process_filter_begin(self.inner, format.as_raw(), direct.as_raw())
+            {
+                let mut context = GraphicsEffectContext::new();
+                func(&mut context, effect);
+                obs_source_process_filter_tech_end(
+                    self.inner,
+                    effect.as_ptr(),
+                    cx,
+                    cy,
+                    technique.as_ptr(),
+                );
             }
         }
     }

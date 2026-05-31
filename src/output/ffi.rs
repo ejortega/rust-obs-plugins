@@ -1,4 +1,4 @@
-use super::{traits::*, CreatableOutputContext, OutputRef};
+use super::{CreatableOutputContext, OutputRef, traits::*};
 use crate::hotkey::{Hotkey, HotkeyCallbacks};
 use crate::{data::DataObj, wrapper::PtrWrapper};
 use obs_sys::{
@@ -27,13 +27,15 @@ impl<D> DataWrapper<D> {
         data: *mut c_void,
     ) {
         for (name, description, func) in callbacks.into_iter() {
-            let id = obs_hotkey_register_output(
-                output,
-                name.as_ptr(),
-                description.as_ptr(),
-                Some(hotkey_callback::<D>),
-                data,
-            );
+            let id = unsafe {
+                obs_hotkey_register_output(
+                    output,
+                    name.as_ptr(),
+                    description.as_ptr(),
+                    Some(hotkey_callback::<D>),
+                    data,
+                )
+            };
 
             self.hotkey_callbacks.insert(id, func);
         }
@@ -54,7 +56,7 @@ pub unsafe extern "C" fn create<D: Outputable>(
     output: *mut obs_output_t,
 ) -> *mut c_void {
     // this is later forgotten
-    let settings = DataObj::from_raw_unchecked(settings).unwrap();
+    let settings = unsafe { DataObj::from_raw_unchecked(settings) }.unwrap();
     let mut context = CreatableOutputContext::from_raw(settings);
     let output_context = OutputRef::from_raw(output).expect("create");
 
@@ -65,16 +67,18 @@ pub unsafe extern "C" fn create<D: Outputable>(
 
     let pointer = Box::into_raw(wrapper);
 
-    pointer
-        .as_mut()
-        .unwrap()
-        .register_callbacks(callbacks, output, pointer as *mut c_void);
+    unsafe {
+        pointer
+            .as_mut()
+            .unwrap()
+            .register_callbacks(callbacks, output, pointer as *mut c_void);
+    }
 
     pointer as *mut c_void
 }
 
 pub unsafe extern "C" fn destroy<D>(data: *mut c_void) {
-    let wrapper: Box<DataWrapper<D>> = Box::from_raw(data as *mut DataWrapper<D>);
+    let wrapper: Box<DataWrapper<D>> = unsafe { Box::from_raw(data as *mut DataWrapper<D>) };
     drop(wrapper);
 }
 
@@ -85,7 +89,7 @@ macro_rules! impl_simple_fn {
                 data: *mut ::std::os::raw::c_void,
                 $($($params_name:$params_ty),*)?
             ) $(-> $ret)? {
-                let wrapper = &mut *(data as *mut DataWrapper<D>);
+                let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
                 D::$name(&mut wrapper.data $(,$($params_name),*)?)
             }
         }
@@ -102,13 +106,15 @@ impl_simple_fn! {
 }
 
 pub unsafe extern "C" fn raw_video<D: RawVideoOutput>(data: *mut c_void, frame: *mut video_data) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
-    D::raw_video(&mut wrapper.data, &mut *frame)
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let frame = unsafe { &mut *frame };
+    D::raw_video(&mut wrapper.data, frame)
 }
 
 pub unsafe extern "C" fn raw_audio<D: RawAudioOutput>(data: *mut c_void, frame: *mut audio_data) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
-    D::raw_audio(&mut wrapper.data, &mut *frame)
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let frame = unsafe { &mut *frame };
+    D::raw_audio(&mut wrapper.data, frame)
 }
 
 pub unsafe extern "C" fn raw_audio2<D: RawAudio2Output>(
@@ -116,29 +122,31 @@ pub unsafe extern "C" fn raw_audio2<D: RawAudio2Output>(
     idx: size_t,
     frame: *mut audio_data,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
-    D::raw_audio2(&mut wrapper.data, idx, &mut *frame)
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let frame = unsafe { &mut *frame };
+    D::raw_audio2(&mut wrapper.data, idx, frame)
 }
 
 pub unsafe extern "C" fn encoded_packet<D: EncodedPacketOutput>(
     data: *mut c_void,
     packet: *mut encoder_packet,
 ) {
-    let wrapper = &mut *(data as *mut DataWrapper<D>);
-    D::encoded_packet(&mut wrapper.data, &mut *packet)
+    let wrapper = unsafe { &mut *(data as *mut DataWrapper<D>) };
+    let packet = unsafe { &mut *packet };
+    D::encoded_packet(&mut wrapper.data, packet)
 }
 
 pub unsafe extern "C" fn update<D: UpdateOutput>(data: *mut c_void, settings: *mut obs_data_t) {
-    let data: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let data: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     // this is later forgotten
-    let mut settings = DataObj::from_raw_unchecked(settings).unwrap();
+    let mut settings = unsafe { DataObj::from_raw_unchecked(settings) }.unwrap();
     D::update(&mut data.data, &mut settings);
     forget(settings);
 }
 
 pub unsafe extern "C" fn get_defaults<D: GetDefaultsOutput>(settings: *mut obs_data_t) {
     // this is later forgotten
-    let mut settings = DataObj::from_raw_unchecked(settings).unwrap();
+    let mut settings = unsafe { DataObj::from_raw_unchecked(settings) }.unwrap();
     D::get_defaults(&mut settings);
     forget(settings);
 }
@@ -155,7 +163,7 @@ pub unsafe extern "C" fn get_defaults<D: GetDefaultsOutput>(settings: *mut obs_d
 pub unsafe extern "C" fn get_properties<D: GetPropertiesOutput>(
     data: *mut ::std::os::raw::c_void,
 ) -> *mut obs_properties {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
     let properties = D::get_properties(&mut wrapper.data);
     properties.into_raw()
 }
@@ -173,11 +181,11 @@ pub unsafe extern "C" fn hotkey_callback<D>(
     hotkey: *mut obs_hotkey_t,
     pressed: bool,
 ) {
-    let wrapper: &mut DataWrapper<D> = &mut *(data as *mut DataWrapper<D>);
+    let wrapper: &mut DataWrapper<D> = unsafe { &mut *(data as *mut DataWrapper<D>) };
 
     let data = &mut wrapper.data;
     let hotkey_callbacks = &mut wrapper.hotkey_callbacks;
-    let mut key = Hotkey::from_raw(hotkey, pressed);
+    let mut key = unsafe { Hotkey::from_raw(hotkey, pressed) };
 
     if let Some(callback) = hotkey_callbacks.get_mut(&id) {
         callback(&mut key, data);

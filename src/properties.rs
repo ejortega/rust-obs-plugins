@@ -2,7 +2,7 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
 
 use crate::{native_enum, string::ObsString, wrapper::PtrWrapper};
-use num_traits::{one, Bounded, Float, Num, NumCast, PrimInt, ToPrimitive};
+use num_traits::{Bounded, Float, Num, NumCast, PrimInt, ToPrimitive, one};
 use obs_sys::{
     obs_combo_format, obs_combo_format_OBS_COMBO_FORMAT_FLOAT,
     obs_combo_format_OBS_COMBO_FORMAT_INT, obs_combo_format_OBS_COMBO_FORMAT_INVALID,
@@ -332,16 +332,27 @@ impl<T: ToPrimitive> ObsProp for NumberProp<T> {
                 let step: c_int = NumCast::from(self.step).unwrap();
 
                 if self.slider {
-                    obs_properties_add_int_slider(
-                        p,
-                        name.as_ptr(),
-                        description.as_ptr(),
-                        min,
-                        max,
-                        step,
-                    );
+                    unsafe {
+                        obs_properties_add_int_slider(
+                            p,
+                            name.as_ptr(),
+                            description.as_ptr(),
+                            min,
+                            max,
+                            step,
+                        );
+                    }
                 } else {
-                    obs_properties_add_int(p, name.as_ptr(), description.as_ptr(), min, max, step);
+                    unsafe {
+                        obs_properties_add_int(
+                            p,
+                            name.as_ptr(),
+                            description.as_ptr(),
+                            min,
+                            max,
+                            step,
+                        );
+                    }
                 }
             }
             NumberType::Float => {
@@ -350,23 +361,27 @@ impl<T: ToPrimitive> ObsProp for NumberProp<T> {
                 let step: f64 = NumCast::from(self.step).unwrap();
 
                 if self.slider {
-                    obs_properties_add_float_slider(
-                        p,
-                        name.as_ptr(),
-                        description.as_ptr(),
-                        min,
-                        max,
-                        step,
-                    );
+                    unsafe {
+                        obs_properties_add_float_slider(
+                            p,
+                            name.as_ptr(),
+                            description.as_ptr(),
+                            min,
+                            max,
+                            step,
+                        );
+                    }
                 } else {
-                    obs_properties_add_float(
-                        p,
-                        name.as_ptr(),
-                        description.as_ptr(),
-                        min,
-                        max,
-                        step,
-                    );
+                    unsafe {
+                        obs_properties_add_float(
+                            p,
+                            name.as_ptr(),
+                            description.as_ptr(),
+                            min,
+                            max,
+                            step,
+                        );
+                    }
                 }
             }
         }
@@ -382,7 +397,9 @@ impl ObsProp for BoolProp {
         name: ObsString,
         description: ObsString,
     ) {
-        obs_properties_add_bool(p, name.as_ptr(), description.as_ptr());
+        unsafe {
+            obs_properties_add_bool(p, name.as_ptr(), description.as_ptr());
+        }
     }
 }
 pub struct TextProp {
@@ -402,7 +419,9 @@ impl ObsProp for TextProp {
         name: ObsString,
         description: ObsString,
     ) {
-        obs_properties_add_text(p, name.as_ptr(), description.as_ptr(), self.typ.into());
+        unsafe {
+            obs_properties_add_text(p, name.as_ptr(), description.as_ptr(), self.typ.into());
+        }
     }
 }
 
@@ -415,7 +434,9 @@ impl ObsProp for ColorProp {
         name: ObsString,
         description: ObsString,
     ) {
-        obs_properties_add_color(p, name.as_ptr(), description.as_ptr());
+        unsafe {
+            obs_properties_add_color(p, name.as_ptr(), description.as_ptr());
+        }
     }
 }
 
@@ -435,7 +456,9 @@ impl ObsProp for FontProp {
         name: ObsString,
         description: ObsString,
     ) {
-        obs_properties_add_font(p, name.as_ptr(), description.as_ptr());
+        unsafe {
+            obs_properties_add_font(p, name.as_ptr(), description.as_ptr());
+        }
     }
 }
 
@@ -487,14 +510,16 @@ impl ObsProp for PathProp {
         name: ObsString,
         description: ObsString,
     ) {
-        obs_properties_add_path(
-            p,
-            name.as_ptr(),
-            description.as_ptr(),
-            self.typ.into(),
-            ObsString::ptr_or_null(&self.filter),
-            ObsString::ptr_or_null(&self.default_path),
-        );
+        unsafe {
+            obs_properties_add_path(
+                p,
+                name.as_ptr(),
+                description.as_ptr(),
+                self.typ.into(),
+                ObsString::ptr_or_null(&self.filter),
+                ObsString::ptr_or_null(&self.default_path),
+            );
+        }
     }
 }
 
@@ -531,13 +556,15 @@ impl ObsProp for EditableListProp {
         name: ObsString,
         description: ObsString,
     ) {
-        obs_properties_add_editable_list(
-            p,
-            name.as_ptr(),
-            description.as_ptr(),
-            self.typ.into(),
-            ObsString::ptr_or_null(&self.filter),
-            ObsString::ptr_or_null(&self.default_path),
-        );
+        unsafe {
+            obs_properties_add_editable_list(
+                p,
+                name.as_ptr(),
+                description.as_ptr(),
+                self.typ.into(),
+                ObsString::ptr_or_null(&self.filter),
+                ObsString::ptr_or_null(&self.default_path),
+            );
+        }
     }
 }

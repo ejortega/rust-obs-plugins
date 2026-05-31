@@ -2,7 +2,7 @@
 name = "scroll-focus-filter"
 version = "0.1.0"
 authors = ["Bennett Hardwick <me@bennetthardwick.com>"]
-edition = "2018"
+edition = "2024"
 
 [dependencies]
 obs-wrapper = { path = "../..", version = "*" }

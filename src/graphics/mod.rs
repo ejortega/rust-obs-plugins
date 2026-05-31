@@ -1,22 +1,23 @@
 pub mod display;
 
-use crate::{native_enum, Error, Result};
+use crate::{Error, Result, native_enum};
 use core::convert::TryFrom;
 use core::ptr::null_mut;
 use obs_sys::{
-    gs_address_mode, gs_address_mode_GS_ADDRESS_BORDER, gs_address_mode_GS_ADDRESS_CLAMP,
-    gs_address_mode_GS_ADDRESS_MIRROR, gs_address_mode_GS_ADDRESS_MIRRORONCE,
-    gs_address_mode_GS_ADDRESS_WRAP, gs_color_format, gs_color_format_GS_A8,
-    gs_color_format_GS_BGRA, gs_color_format_GS_BGRX, gs_color_format_GS_DXT1,
-    gs_color_format_GS_DXT3, gs_color_format_GS_DXT5, gs_color_format_GS_R10G10B10A2,
+    GS_DYNAMIC, gs_address_mode, gs_address_mode_GS_ADDRESS_BORDER,
+    gs_address_mode_GS_ADDRESS_CLAMP, gs_address_mode_GS_ADDRESS_MIRROR,
+    gs_address_mode_GS_ADDRESS_MIRRORONCE, gs_address_mode_GS_ADDRESS_WRAP, gs_color_format,
+    gs_color_format_GS_A8, gs_color_format_GS_BGRA, gs_color_format_GS_BGRX,
+    gs_color_format_GS_DXT1, gs_color_format_GS_DXT3, gs_color_format_GS_DXT5,
+    gs_color_format_GS_R8, gs_color_format_GS_R8G8, gs_color_format_GS_R10G10B10A2,
     gs_color_format_GS_R16, gs_color_format_GS_R16F, gs_color_format_GS_R32F,
-    gs_color_format_GS_R8, gs_color_format_GS_R8G8, gs_color_format_GS_RG16F,
-    gs_color_format_GS_RG32F, gs_color_format_GS_RGBA, gs_color_format_GS_RGBA16,
-    gs_color_format_GS_RGBA16F, gs_color_format_GS_RGBA32F, gs_color_format_GS_UNKNOWN,
-    gs_effect_create, gs_effect_destroy, gs_effect_get_param_by_name, gs_effect_get_param_info,
-    gs_effect_param_info, gs_effect_set_next_sampler, gs_effect_set_texture, gs_effect_set_vec2,
-    gs_effect_t, gs_eparam_t, gs_sample_filter, gs_sample_filter_GS_FILTER_ANISOTROPIC,
-    gs_sample_filter_GS_FILTER_LINEAR, gs_sample_filter_GS_FILTER_MIN_LINEAR_MAG_MIP_POINT,
+    gs_color_format_GS_RG16F, gs_color_format_GS_RG32F, gs_color_format_GS_RGBA,
+    gs_color_format_GS_RGBA16, gs_color_format_GS_RGBA16F, gs_color_format_GS_RGBA32F,
+    gs_color_format_GS_UNKNOWN, gs_effect_create, gs_effect_destroy, gs_effect_get_param_by_name,
+    gs_effect_get_param_info, gs_effect_param_info, gs_effect_set_next_sampler,
+    gs_effect_set_texture, gs_effect_set_vec2, gs_effect_t, gs_eparam_t, gs_sample_filter,
+    gs_sample_filter_GS_FILTER_ANISOTROPIC, gs_sample_filter_GS_FILTER_LINEAR,
+    gs_sample_filter_GS_FILTER_MIN_LINEAR_MAG_MIP_POINT,
     gs_sample_filter_GS_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR,
     gs_sample_filter_GS_FILTER_MIN_MAG_LINEAR_MIP_POINT,
     gs_sample_filter_GS_FILTER_MIN_MAG_POINT_MIP_LINEAR,
@@ -34,7 +35,7 @@ use obs_sys::{
     gs_texture_map, gs_texture_set_image, gs_texture_t, gs_texture_unmap, obs_allow_direct_render,
     obs_allow_direct_render_OBS_ALLOW_DIRECT_RENDERING,
     obs_allow_direct_render_OBS_NO_DIRECT_RENDERING, obs_enter_graphics, obs_leave_graphics,
-    obs_source_draw, vec2, vec3, vec4, GS_DYNAMIC,
+    obs_source_draw, vec2, vec3, vec4,
 };
 use pastey::item;
 use std::{
@@ -149,10 +150,10 @@ impl GraphicsEffectParam {
     /// be modified somewhere else so this is UB.
     pub unsafe fn from_raw(raw: *mut gs_eparam_t) -> Self {
         let mut info = gs_effect_param_info::default();
-        gs_effect_get_param_info(raw, &mut info);
+        unsafe { gs_effect_get_param_info(raw, &mut info) };
 
         let shader_type = ShaderParamType::from_raw(info.type_).unwrap();
-        let name = CString::from(CStr::from_ptr(info.name))
+        let name = CString::from(unsafe { CStr::from_ptr(info.name) })
             .into_string()
             .unwrap_or_else(|_| String::from("{unknown-param-name}"));
 

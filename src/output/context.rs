@@ -15,8 +15,8 @@ use obs_sys::{
 use crate::hotkey::HotkeyCallbacks;
 use crate::media::{audio::AudioRef, video::VideoRef};
 use crate::string::TryIntoObsString;
-use crate::{hotkey::Hotkey, prelude::DataObj, string::ObsString, wrapper::PtrWrapper};
 use crate::{Error, Result};
+use crate::{hotkey::Hotkey, prelude::DataObj, string::ObsString, wrapper::PtrWrapper};
 
 #[deprecated = "use `OutputRef` instead"]
 pub type OutputContext = OutputRef;

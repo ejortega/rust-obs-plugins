@@ -6,7 +6,7 @@ use obs_wrapper::{
     graphics::*, obs_register_module, obs_string, prelude::*, properties::*, source::*,
 };
 
-use crossbeam_channel::{unbounded, Receiver, Sender};
+use crossbeam_channel::{Receiver, Sender, unbounded};
 
 enum FilterMessage {
     CloseConnection,

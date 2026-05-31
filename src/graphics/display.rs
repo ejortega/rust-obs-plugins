@@ -150,7 +150,7 @@ pub unsafe extern "C" fn draw_callback<S: DrawCallback>(
     cx: u32,
     cy: u32,
 ) {
-    let callback = &*(data as *const S);
+    let callback = unsafe { &*(data as *const S) };
     callback.draw(cx, cy);
 }
 
