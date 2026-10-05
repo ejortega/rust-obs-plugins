@@ -71,7 +71,7 @@ fn main() {
         // alignment attribute bindgen can't reflect into Rust, so their
         // generated layout tests panic. They're not part of the OBS public
         // API — only transitively included via simde — so just drop them.
-        .blocklist_type(r"^(int|uint|float|bfloat|poly)(8x8|16x4|32x2)x[234]_t$")
+        .blocklist_type(r"^(int|uint|float|bfloat|mfloat|poly)(8x8|16x4|32x2)x[234]_t$")
         // libc functions leak in through the system headers OBS includes.
         // clang treats these as builtins and reports their size_t params as
         // `unsigned long`, so bindgen emits c_ulong rather than usize and
