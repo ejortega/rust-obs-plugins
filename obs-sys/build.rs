@@ -72,6 +72,13 @@ fn main() {
         // generated layout tests panic. They're not part of the OBS public
         // API — only transitively included via simde — so just drop them.
         .blocklist_type(r"^(int|uint|float|bfloat|poly)(8x8|16x4|32x2)x[234]_t$")
+        // libc functions leak in through the system headers OBS includes.
+        // clang treats these as builtins and reports their size_t params as
+        // `unsigned long`, so bindgen emits c_ulong rather than usize and
+        // rustc flags the redeclarations of its own runtime symbols
+        // (`suspicious_runtime_symbol_definitions`). They're not part of the
+        // OBS API either, so drop them.
+        .blocklist_function("^(memcpy|memmove|memset|memcmp|bcmp|strlen|malloc|realloc)$")
         .derive_default(true)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
 

@@ -9,7 +9,7 @@ license = "GPL-2.0"
 repository = "https://github.com/bennetthardwick/rust-obs-plugins"
 
 [build-dependencies]
-bindgen = "0.72.0"
+bindgen = "0.73.0"
 
 [target.'cfg(windows)'.build-dependencies]
 cc = "1.0"
