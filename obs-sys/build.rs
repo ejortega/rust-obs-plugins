@@ -72,6 +72,12 @@ fn main() {
         // generated layout tests panic. They're not part of the OBS public
         // API — only transitively included via simde — so just drop them.
         .blocklist_type(r"^(int|uint|float|bfloat|mfloat|poly)(8x8|16x4|32x2)x[234]_t$")
+        // On Windows x86_64, clang's amxintrin.h (pulled in via <intrin.h>)
+        // defines an AMX tile struct whose 1024-byte vector member is
+        // 64-byte aligned. bindgen can't reflect that alignment into Rust,
+        // so the generated offset assertion fails. Only static inline
+        // intrinsics use it, and bindgen doesn't emit those.
+        .blocklist_type("^__tile1024i(_str)?$")
         // libc functions leak in through the system headers OBS includes.
         // clang treats these as builtins and reports their size_t params as
         // `unsigned long`, so bindgen emits c_ulong rather than usize and
